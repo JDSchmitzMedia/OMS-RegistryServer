@@ -2,7 +2,7 @@
 import os
 
 pdsDefaultIP = "127.0.0.1"
-pdsDefaultPort = "8031"
+pdsDefaultPort = "8041"
 SERVER_UPLOAD_DIR = '/var/www/trustframework4/'
 
 PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))

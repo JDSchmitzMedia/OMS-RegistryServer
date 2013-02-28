@@ -47,3 +47,5 @@ class UserToUser(models.Model):
   role = models.CharField(max_length=100)
   class Meta:
     unique_together = (("profileGuest", "profileHost", "role"))
+
+

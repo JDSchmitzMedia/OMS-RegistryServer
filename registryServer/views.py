@@ -31,46 +31,23 @@ def js(request):
     response = {"success":True}
     return render_to_response('javascript/test.js' )
 
-#def get_key_from_token(request):
-#    response_content = {}
-#
-#    try:
-#        scope = AccessRange.objects.get(key=str(request.GET['scope']))
-#        authenticator = JSONAuthenticator(scope=scope)
-#        authenticator.validate(request)
-#        if request.GET.get('hostid'):
-#            u2u = get_object_or_404(UserToUser,id=request.GET['hostid'])
-#            #a request from a peer
-#            role_list = []
-#            role_list.append(u2u.role)
-#            response_content['roles'] = role_list
-#            response_content['request_type'] = "peer"
-#        else:
-#            response_content['request_type'] = "self"
-#            #a request from self (host=guest)
-#            response_content['key']=authenticator.user.get_profile().uuid
-#            response_content['pds_location']=authenticator.user.get_profile().pds_ip
-#            response_content['status']="success"
-#    except Exception as e:
-#        response_content['status']="error"
-#        response_content['message']="failed to get key from token:"
-#        print e
-#
-#    return HttpResponse(json.dumps(response_content), mimetype="application/json")
-#
 def get_key_from_token(request):
     response_content = {}
 
     try:
-        scope = AccessRange.objects.get(key="trustframework")
-        authenticator = JSONAuthenticator(scope=scope)
-        authenticator.validate(request)
+	# require "trustframework" scope for token callbacks
+        #scope = AccessRange.objects.get(key="trustframework")
+        #authenticator = JSONAuthenticator(scope=scope)
+        #authenticator.validate(request)
+	
+	# get scopes associated with the bearer_token
         bearer_token = request.GET['bearer_token']
         token = AccessToken.objects.get(token=bearer_token)
         scope_list = list()
         for s in token.scope.all():
             scope_list.append(str(s.key))
-        client = token.client.name
+        client_name = token.client.name
+        client_id = token.client.key
 
         if request.GET.get('hostid'):
             u2u = get_object_or_404(UserToUser,id=request.GET['hostid'])
@@ -82,10 +59,11 @@ def get_key_from_token(request):
         else:
             response_content['request_type'] = "self"
             #a request from self (host=guest)
-            response_content['key']=authenticator.user.get_profile().uuid
-            response_content['pds_location']=authenticator.user.get_profile().pds_ip
+            response_content['key']=token.user.get_profile().uuid
+            response_content['pds_location']=token.user.get_profile().pds_ip
             response_content['status']="success"
-            response_content['client']=client
+            response_content['client_id']=client_id
+            response_content['client_name']=client_name
             response_content['scopes']=scope_list
     except Exception as e:
         response_content['status']="error"
@@ -93,8 +71,6 @@ def get_key_from_token(request):
         print e
 
     return HttpResponse(json.dumps(response_content), mimetype="application/json")
-
-
 
 def get_system_entity_connection(request):
     response_content = {}
